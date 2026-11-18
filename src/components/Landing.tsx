@@ -65,7 +65,7 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
             {loggedIn ? (
               <>
                 <TreePine className="h-5 w-5" />
-                Миний урилга ба Монита
+                Миний булан
                 <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
               </>
             ) : (
@@ -243,7 +243,7 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
             <p className="text-sm text-slate-400 mt-2">Урилга, хүсэл болон Монитагаа өөрийн хуудаснаас харна уу</p>
             <button onClick={onEnter} className="btn-gold mt-6 group">
               <TreePine className="h-5 w-5" />
-              Миний хуудас руу орох
+              Миний булан руу орох
               <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </button>
           </div>

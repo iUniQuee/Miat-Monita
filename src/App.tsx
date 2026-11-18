@@ -157,7 +157,7 @@ export default function App() {
               <HeaderBtn active={openPanel === 'auth'} onClick={() => navigate('auth')} icon={<Ticket className="h-4 w-4" />} label="Бүртгүүлэх" />
             )}
             {loggedIn && (
-              <HeaderBtn active={openPanel === 'dashboard'} onClick={() => navigate('dashboard')} icon={<TreePine className="h-4 w-4" />} label="Миний урилга" />
+              <HeaderBtn active={openPanel === 'dashboard'} onClick={() => navigate('dashboard')} icon={<TreePine className="h-4 w-4" />} label="Миний булан" />
             )}
             <HeaderBtn active={openPanel === 'admin'} onClick={goAdmin} icon={<ShieldCheck className="h-4 w-4" />} label="Удирдлага" hideOnMobile />
           </nav>
@@ -208,7 +208,7 @@ export default function App() {
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-around">
           <TabBtn active={openPanel === 'home'} onClick={() => navigate('home')} icon={<Home className="h-5 w-5" />} label="Нүүр" />
           {!loggedIn && <TabBtn active={openPanel === 'auth'} onClick={() => navigate('auth')} icon={<Ticket className="h-5 w-5" />} label="Бүртгүүлэх" />}
-          {loggedIn && <TabBtn active={openPanel === 'dashboard'} onClick={() => navigate('dashboard')} icon={<TreePine className="h-5 w-5" />} label="Миний" />}
+          {loggedIn && <TabBtn active={openPanel === 'dashboard'} onClick={() => navigate('dashboard')} icon={<TreePine className="h-5 w-5" />} label="Булан" />}
           <TabBtn active={openPanel === 'admin'} onClick={goAdmin} icon={<ShieldCheck className="h-5 w-5" />} label="Удирдлага" />
         </div>
       </div>
