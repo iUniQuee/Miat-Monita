@@ -15,7 +15,7 @@ function normalizeUrl(raw: string): string {
 
 /**
  * Project-ийн нийтийн (browser) тохиргоо. Supabase-ийн publishable/anon key нь
- * browser-т зориулсан түлхүүр — мэдээллийг RLS хамгаалдаг тул нийтэд нээлттэй
+ * browser-т зориулсан түлхүүр: мэдээллийг RLS хамгаалдаг тул нийтэд нээлттэй
  * байх нь хэвийн. Ингэснээр deploy хийсэн газар environment variable
  * тохируулаагүй ч апп ажиллана. `.env` эсвэл hosting-ийн environment variable
  * байвал тэр нь энэ утгыг дарж бичнэ.
