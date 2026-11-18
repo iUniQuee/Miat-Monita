@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { LogIn, UserPlus, CheckCircle2, AlertCircle } from 'lucide-react';
-import { findMember, nextId, validateRegistration } from '@/lib/storage';
-import { ADMIN_SIGN_CODE, type Member } from '@/lib/types';
+import { AlertCircle, Loader2, LogIn, UserPlus } from 'lucide-react';
+import { errorText, signInUser, signUpUser } from '@/lib/api';
 
 interface AuthPanelProps {
-  onLogin: (member: Member) => void;
+  onAuthenticated: () => Promise<void> | void;
 }
 
 type Tab = 'register' | 'login';
 
-export function AuthPanel({ onLogin }: AuthPanelProps) {
+export function AuthPanel({ onAuthenticated }: AuthPanelProps) {
   const [tab, setTab] = useState<Tab>('register');
-  const [justRegistered, setJustRegistered] = useState(false);
 
   return (
     <div className="relative z-10 max-w-md mx-auto px-5 py-12 md:py-20">
@@ -39,55 +37,75 @@ export function AuthPanel({ onLogin }: AuthPanelProps) {
         </div>
 
         {tab === 'register' ? (
-          <RegisterForm
-            onRegistered={() => {
-              setJustRegistered(true);
-              setTab('login');
-            }}
-          />
+          <RegisterForm onAuthenticated={onAuthenticated} />
         ) : (
-          <LoginForm onLogin={onLogin} justRegistered={justRegistered} />
+          <LoginForm onAuthenticated={onAuthenticated} />
         )}
       </div>
     </div>
   );
 }
 
-function RegisterForm({ onRegistered }: { onRegistered: () => void }) {
+function RegisterForm({
+  onAuthenticated,
+}: {
+  onAuthenticated: () => Promise<void> | void;
+}) {
   const [fullName, setFullName] = useState('');
   const [signCode, setSignCode] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [wishlist, setWishlist] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    const data = {
-      fullName: fullName.trim(),
-      signCode: signCode.trim().toUpperCase(),
-      phone: phone.trim(),
-      password,
-    };
+    const cleanFullName = fullName.trim();
+    const cleanSignCode = signCode.trim().toUpperCase();
+    const cleanPhone = phone.trim();
 
-    const members = JSON.parse(localStorage.getItem('monita_members_v1') || '[]') as Member[];
-    const err = validateRegistration(members, data);
-    if (err) {
-      setError(err);
+    if (cleanFullName.length < 3) {
+      setError('Овог, нэрээ бүрэн бичнэ үү.');
+      return;
+    }
+    if (cleanSignCode.length < 4) {
+      setError('Sign code дор хаяж 4 тэмдэгттэй байх ёстой.');
+      return;
+    }
+    if (!/^\d{8}$/.test(cleanPhone)) {
+      setError('Утасны дугаар 8 оронтой тоо байх ёстой.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Нууц үг дор хаяж 6 тэмдэгттэй байх ёстой.');
       return;
     }
 
-    const member: Member = {
-      id: nextId(),
-      ...data,
-      wishlist: wishlist.trim(),
-      status: data.signCode === ADMIN_SIGN_CODE ? 'approved' : 'pending',
-      createdAt: Date.now(),
-    };
-    localStorage.setItem('monita_members_v1', JSON.stringify([...members, member]));
-    onRegistered();
+    setBusy(true);
+    try {
+      const result = await signUpUser({
+        password,
+        fullName: cleanFullName,
+        signCode: cleanSignCode,
+        phone: cleanPhone,
+        wishlist,
+      });
+
+      if (result.needsEmailConfirmation) {
+        setError(
+          'Supabase дээр "Confirm email" асаалттай байна. Authentication → Sign In / Providers → Email хэсэгт унтраасан эсэхээ шалгаад дахин бүртгүүлнэ үү.',
+        );
+      } else {
+        await onAuthenticated();
+      }
+    } catch (err) {
+      setError(errorText(err, 'Бүртгэл үүсгэж чадсангүй.'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -112,6 +130,9 @@ function RegisterForm({ onRegistered }: { onRegistered: () => void }) {
           maxLength={12}
           required
         />
+        <p className="text-xs text-slate-500 mt-1.5">
+          Sign code-оор нэвтэрнэ — санаж үлдэхээр сонгоорой.
+        </p>
       </div>
       <div>
         <label className="label">Утасны дугаар *</label>
@@ -131,7 +152,8 @@ function RegisterForm({ onRegistered }: { onRegistered: () => void }) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Дор хаяж 4 тэмдэгт"
+          placeholder="Дор хаяж 6 тэмдэгт"
+          autoComplete="new-password"
           required
         />
       </div>
@@ -154,54 +176,47 @@ function RegisterForm({ onRegistered }: { onRegistered: () => void }) {
         </div>
       )}
 
-      <button type="submit" className="btn-gold w-full">
-        <UserPlus className="h-5 w-5" />
+      <button type="submit" className="btn-gold w-full" disabled={busy}>
+        {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <UserPlus className="h-5 w-5" />}
         Бүртгэл илгээх
       </button>
+      <p className="text-xs text-slate-500 text-center leading-relaxed">
+        Зохион байгуулагч баталгаажуулсны дараа таны Монита нээгдэнэ.
+      </p>
     </form>
   );
 }
 
-function LoginForm({
-  onLogin,
-  justRegistered,
-}: {
-  onLogin: (m: Member) => void;
-  justRegistered: boolean;
-}) {
-  const [identifier, setIdentifier] = useState('');
+function LoginForm({ onAuthenticated }: { onAuthenticated: () => Promise<void> | void }) {
+  const [signCode, setSignCode] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const member = findMember(identifier, password);
-    if (!member) {
-      setError('Sign code / утасны дугаар эсвэл нууц үг тохирохгүй байна.');
-      return;
+    setError(null);
+    setBusy(true);
+    try {
+      await signInUser(signCode, password);
+      await onAuthenticated();
+    } catch (err) {
+      setError(errorText(err, 'Нэвтэрч чадсангүй.'));
+    } finally {
+      setBusy(false);
     }
-    if (member.status === 'rejected' && member.signCode !== ADMIN_SIGN_CODE) {
-      setError('Таны бүртгэлд татгалзсан тул нэвтрэх боломжгүй.');
-      return;
-    }
-    onLogin(member);
   };
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      {justRegistered && (
-        <div className="flex items-start gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
-          <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
-          Бүртгэл амжилттай илгээгдлээ. Одоо нэвтэрч статусаа харна уу.
-        </div>
-      )}
       <div>
-        <label className="label">Sign code эсвэл утасны дугаар</label>
+        <label className="label">Sign code</label>
         <input
-          className="field"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
+          className="field font-mono tracking-widest uppercase"
+          value={signCode}
+          onChange={(e) => setSignCode(e.target.value.toUpperCase())}
           placeholder="0001BH"
+          autoComplete="username"
           required
         />
       </div>
@@ -213,6 +228,7 @@ function LoginForm({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="••••••"
+          autoComplete="current-password"
           required
         />
       </div>
@@ -224,8 +240,8 @@ function LoginForm({
         </div>
       )}
 
-      <button type="submit" className="btn-gold w-full">
-        <LogIn className="h-5 w-5" />
+      <button type="submit" className="btn-gold w-full" disabled={busy}>
+        {busy ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
         Нэвтрэх
       </button>
     </form>
