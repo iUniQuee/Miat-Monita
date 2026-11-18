@@ -89,7 +89,7 @@ function BoardingPassCard({ member }: { member: Member }) {
             <div className="text-[11px] text-slate-400">Мэдээлэл лавлагааны тасаг</div>
           </div>
         </div>
-        <div className="text-[11px] text-slate-400 text-right">Миний урилга</div>
+        <div className="text-[11px] text-slate-400 text-right">Миний булан</div>
       </div>
       <div className="flex">
         <div className="flex-1 p-6">
