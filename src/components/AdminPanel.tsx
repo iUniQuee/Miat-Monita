@@ -1,38 +1,46 @@
 import { useState } from 'react';
 import {
-  Lock,
-  ShieldCheck,
-  ClipboardCheck,
-  Users,
-  Trash2,
-  Check,
-  X,
-  CalendarDays,
-  Save,
-  Shuffle,
-  FlaskConical,
   AlertTriangle,
-  PartyPopper,
-  LogOut,
+  CalendarDays,
+  Check,
+  ClipboardCheck,
   Clock,
+  FlaskConical,
+  Loader2,
+  Lock,
+  LogOut,
+  PartyPopper,
+  Save,
+  ShieldCheck,
+  Shuffle,
+  Trash2,
+  Users,
+  X,
 } from 'lucide-react';
 import {
-  loadMembers,
-  makeDummyMembers,
+  addTestMembers,
+  clearDraw,
+  deleteMember,
+  errorText,
   runDraw,
-  saveAssignments,
   saveDates,
-  saveMembers,
-} from '@/lib/storage';
+  setMemberStatus,
+} from '@/lib/api';
 import { dateOrTba } from '@/lib/format';
-import { ADMIN_PIN, ADMIN_SIGN_CODE, STATUS_LABELS, type Assignment, type EventDates, type Member, type UserStatus } from '@/lib/types';
+import {
+  ADMIN_PIN,
+  ADMIN_SIGN_CODE,
+  STATUS_LABELS,
+  type EventDates,
+  type Member,
+  type UserStatus,
+} from '@/lib/types';
 
 interface AdminPanelProps {
   dates: EventDates;
   drawDone: boolean;
-  onDatesChange: (d: EventDates) => void;
-  onMembersChange: () => void;
-  onDrawChange: (a: Assignment[]) => void;
+  members: Member[];
+  onRefresh: () => Promise<void>;
   onExit: () => void;
   adminMember: Member | null;
 }
@@ -40,9 +48,8 @@ interface AdminPanelProps {
 export function AdminPanel({
   dates,
   drawDone,
-  onDatesChange,
-  onMembersChange,
-  onDrawChange,
+  members,
+  onRefresh,
   onExit,
   adminMember,
 }: AdminPanelProps) {
@@ -70,10 +77,18 @@ export function AdminPanel({
         </button>
       </div>
 
+      {!adminMember && (
+        <div className="mb-6 flex items-start gap-2 rounded-xl border border-gold-500/30 bg-gold-500/10 px-4 py-3 text-sm text-gold-300">
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          Таны бүртгэлд зохион байгуулагчийн эрх байхгүй. Өөрчлөлтийг сервер (RLS)
+          хүлээж авахгүй — Sign code нь {ADMIN_SIGN_CODE} бүртгэлээр нэвтэрнэ үү.
+        </div>
+      )}
+
       <div className="space-y-6">
-        <ApprovalSection onMembersChange={onMembersChange} />
-        <DatesSection dates={dates} onSave={onDatesChange} />
-        <DrawSection drawDone={drawDone} onDrawChange={onDrawChange} onMembersChange={onMembersChange} />
+        <ApprovalSection members={members} onRefresh={onRefresh} />
+        <DatesSection dates={dates} onRefresh={onRefresh} />
+        <DrawSection members={members} drawDone={drawDone} onRefresh={onRefresh} />
       </div>
     </div>
   );
@@ -127,37 +142,37 @@ function PinGate({ onUnlock, onExit }: { onUnlock: () => void; onExit: () => voi
   );
 }
 
-function ApprovalSection({ onMembersChange }: { onMembersChange: () => void }) {
-  const [members, setMembers] = useState<Member[]>(() => loadMembers());
+function ApprovalSection({
+  members,
+  onRefresh,
+}: {
+  members: Member[];
+  onRefresh: () => Promise<void>;
+}) {
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const refresh = () => {
-    setMembers(loadMembers());
-    onMembersChange();
-  };
-
-  const setStatus = (id: string, status: UserStatus) => {
-    saveMembers(loadMembers().map((m) => (m.id === id ? { ...m, status } : m)));
-    setConfirmId(null);
-    refresh();
-  };
-
-  const remove = (id: string) => {
-    saveMembers(loadMembers().filter((m) => m.id !== id));
-    setConfirmId(null);
-    refresh();
-  };
-
-  const addDummies = () => {
-    const current = loadMembers();
-    saveMembers([...current, ...makeDummyMembers()]);
-    refresh();
+  const act = async (action: () => Promise<void>) => {
+    setBusy(true);
+    setError(null);
+    try {
+      await action();
+      await onRefresh();
+      setConfirmId(null);
+    } catch (err) {
+      setError(errorText(err, 'Үйлдлийг гүйцэтгэж чадсангүй.'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const sorted = [...members].sort((a, b) => {
     const order: Record<UserStatus, number> = { pending: 0, approved: 1, rejected: 2 };
     return order[a.status] - order[b.status] || b.createdAt - a.createdAt;
   });
+
+  const pendingCount = members.filter((m) => m.status === 'pending').length;
 
   const statusStyle: Record<UserStatus, string> = {
     pending: 'bg-gold-500/15 text-gold-300 border-gold-500/30',
@@ -171,17 +186,28 @@ function ApprovalSection({ onMembersChange }: { onMembersChange: () => void }) {
         <h2 className="font-display text-lg font-bold text-white flex items-center gap-2">
           <ClipboardCheck className="h-5 w-5 text-skyx-300" />
           Бүртгэл баталгаажуулах
-          {members.filter((m) => m.status === 'pending').length > 0 && (
+          {pendingCount > 0 && (
             <span className="badge bg-festive-500/20 text-festive-400 border border-festive-500/30">
-              {members.filter((m) => m.status === 'pending').length} шинэ
+              {pendingCount} шинэ
             </span>
           )}
         </h2>
-        <button onClick={addDummies} className="btn-ghost !px-3.5 !py-2 text-xs">
+        <button
+          onClick={() => void act(addTestMembers)}
+          className="btn-ghost !px-3.5 !py-2 text-xs"
+          disabled={busy}
+        >
           <FlaskConical className="h-4 w-4" />
           Туршлага нэмэх
         </button>
       </div>
+
+      {error && (
+        <div className="mb-4 flex items-start gap-2 rounded-xl border border-festive-500/30 bg-festive-500/10 px-4 py-3 text-sm text-festive-400">
+          <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+          {error}
+        </div>
+      )}
 
       {sorted.length === 0 ? (
         <p className="text-sm text-slate-400 bg-white/[0.03] rounded-2xl border border-white/5 p-6 text-center">
@@ -199,7 +225,7 @@ function ApprovalSection({ onMembersChange }: { onMembersChange: () => void }) {
                   </div>
                   <div className="text-sm text-slate-400 mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
                     <span className="font-mono font-bold text-gold-300">{m.signCode}</span>
-                    <span className="tabular-nums">{m.phone}</span>
+                    {m.phone && <span className="tabular-nums">{m.phone}</span>}
                   </div>
                   {m.wishlist && (
                     <p className="text-xs text-slate-500 mt-1.5 truncate max-w-md">Хүсэл: {m.wishlist}</p>
@@ -213,18 +239,30 @@ function ApprovalSection({ onMembersChange }: { onMembersChange: () => void }) {
                     </span>
                   )}
                   {m.status !== 'approved' && (
-                    <button onClick={() => setStatus(m.id, 'approved')} className="btn-gold !px-3.5 !py-2 text-xs">
+                    <button
+                      onClick={() => void act(() => setMemberStatus(m.id, 'approved'))}
+                      className="btn-gold !px-3.5 !py-2 text-xs"
+                      disabled={busy}
+                    >
                       <Check className="h-4 w-4" />
                       Зөвшөөрөх
                     </button>
                   )}
                   {confirmId === m.id ? (
                     <div className="flex items-center gap-2">
-                      <button onClick={() => setStatus(m.id, 'rejected')} className="btn-danger">
+                      <button
+                        onClick={() => void act(() => setMemberStatus(m.id, 'rejected'))}
+                        className="btn-danger"
+                        disabled={busy}
+                      >
                         <X className="h-4 w-4" />
                         Татгалзах
                       </button>
-                      <button onClick={() => remove(m.id)} className="btn-danger">
+                      <button
+                        onClick={() => void act(() => deleteMember(m.id))}
+                        className="btn-danger"
+                        disabled={busy}
+                      >
                         <Trash2 className="h-4 w-4" />
                         Устгах
                       </button>
@@ -233,7 +271,7 @@ function ApprovalSection({ onMembersChange }: { onMembersChange: () => void }) {
                       </button>
                     </div>
                   ) : (
-                    <button onClick={() => setConfirmId(m.id)} className="btn-danger">
+                    <button onClick={() => setConfirmId(m.id)} className="btn-danger" disabled={busy}>
                       <Trash2 className="h-4 w-4" />
                       Татгалзах / Устгах
                     </button>
@@ -244,27 +282,49 @@ function ApprovalSection({ onMembersChange }: { onMembersChange: () => void }) {
           ))}
         </div>
       )}
+      {busy && (
+        <p className="mt-4 flex items-center gap-2 text-xs text-slate-400">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Серверт хадгалж байна…
+        </p>
+      )}
     </div>
   );
 }
 
-function DatesSection({ dates, onSave }: { dates: EventDates; onSave: (d: EventDates) => void }) {
+function DatesSection({
+  dates,
+  onRefresh,
+}: {
+  dates: EventDates;
+  onRefresh: () => Promise<void>;
+}) {
   const [reg, setReg] = useState(dates.registration ?? '');
   const [draw, setDraw] = useState(dates.draw ?? '');
   const [gift, setGift] = useState(dates.giftDay ?? '');
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const next: EventDates = {
-      registration: reg || null,
-      draw: draw || null,
-      giftDay: gift || null,
-    };
-    saveDates(next);
-    onSave(next);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+    setBusy(true);
+    setError(null);
+    try {
+      await saveDates({
+        ...dates,
+        registration: reg || null,
+        draw: draw || null,
+        giftDay: gift || null,
+      });
+      await onRefresh();
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2200);
+    } catch (err) {
+      setError(errorText(err, 'Хуваарь хадгалж чадсангүй.'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -286,12 +346,13 @@ function DatesSection({ dates, onSave }: { dates: EventDates; onSave: (d: EventD
           <label className="label">Бэлэг өгөх өдөр</label>
           <input type="date" className="field" value={gift} onChange={(e) => setGift(e.target.value)} />
         </div>
-        <div className="sm:col-span-3 flex items-center gap-3">
-          <button type="submit" className="btn-gold !py-2.5 text-sm">
-            <Save className="h-4 w-4" />
+        <div className="sm:col-span-3 flex flex-wrap items-center gap-3">
+          <button type="submit" className="btn-gold !py-2.5 text-sm" disabled={busy}>
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Хуваарь хадгалах
           </button>
           {saved && <span className="text-sm font-semibold text-emerald-400">Хадгалагдлаа</span>}
+          {error && <span className="text-sm font-semibold text-festive-400">{error}</span>}
         </div>
       </form>
       <p className="text-xs text-slate-500 mt-3">
@@ -302,31 +363,33 @@ function DatesSection({ dates, onSave }: { dates: EventDates; onSave: (d: EventD
 }
 
 function DrawSection({
+  members,
   drawDone,
-  onDrawChange,
-  onMembersChange,
+  onRefresh,
 }: {
+  members: Member[];
   drawDone: boolean;
-  onDrawChange: (a: Assignment[]) => void;
-  onMembersChange: () => void;
+  onRefresh: () => Promise<void>;
 }) {
-  const members = loadMembers();
   const approved = members.filter((m) => m.status === 'approved');
+  const pending = members.filter((m) => m.status === 'pending');
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  const run = () => {
-    const result = runDraw(members);
-    if (!result) {
-      setError('Сугалаа хийхэд дор хаяж 2 зөвшөөрөгдсөн гишүун шаардлагатай.');
-      setConfirming(false);
-      return;
-    }
-    saveAssignments(result);
-    onDrawChange(result);
+  const act = async (action: () => Promise<void>) => {
+    setBusy(true);
     setError(null);
-    setConfirming(false);
-    onMembersChange();
+    try {
+      await action();
+      await onRefresh();
+      setConfirming(false);
+    } catch (err) {
+      setError(errorText(err, 'Сугалааг гүйцэтгэж чадсангүй.'));
+      setConfirming(false);
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -345,7 +408,7 @@ function DrawSection({
         <span>Зөвшөөрөгдсөн: <strong className="text-white">{approved.length}</strong> хүн</span>
         <span className="text-slate-600">·</span>
         <Clock className="h-4 w-4 text-gold-400" />
-        <span>Хүлээгдэж буй: <strong className="text-white">{members.filter((m) => m.status === 'pending').length}</strong> хүн</span>
+        <span>Хүлээгдэж буй: <strong className="text-white">{pending.length}</strong> хүн</span>
       </div>
 
       {error && (
@@ -362,17 +425,18 @@ function DrawSection({
             Сугалаа амжилттай явагдсан. Гишүүд нэвтэрч Монитаа харна.
           </div>
           <button
-            onClick={() => { saveAssignments([]); onDrawChange([]); }}
+            onClick={() => void act(clearDraw)}
             className="btn-ghost mt-4 !py-2.5 text-sm"
+            disabled={busy}
           >
-            <RefreshIcon />
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshIcon />}
             Сугалааг дахин эхлүүлэх (устгах)
           </button>
         </div>
       ) : confirming ? (
         <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button onClick={run} className="btn-gold text-sm">
-            <Shuffle className="h-4 w-4" />
+          <button onClick={() => void act(() => runDraw(members).then(() => undefined))} className="btn-gold text-sm" disabled={busy}>
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Shuffle className="h-4 w-4" />}
             Тийм, эхлүүлэх
           </button>
           <button onClick={() => setConfirming(false)} className="btn-ghost !py-2.5 text-sm">
@@ -382,7 +446,7 @@ function DrawSection({
       ) : (
         <button
           onClick={() => setConfirming(true)}
-          disabled={approved.length < 2}
+          disabled={approved.length < 2 || busy}
           className="btn-gold mt-5 text-sm"
         >
           <Shuffle className="h-4 w-4" />
