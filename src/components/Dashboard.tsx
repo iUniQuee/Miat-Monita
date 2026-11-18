@@ -1,31 +1,33 @@
 import { useState } from 'react';
 import {
-  LogOut,
-  Clock,
   CheckCircle2,
-  Ticket,
+  Clock,
   Download,
   Gift,
-  Sparkles,
-  User,
   Hash,
-  Save,
+  Loader2,
+  LogOut,
   Pencil,
   RefreshCw,
+  Save,
+  Sparkles,
+  Ticket,
+  User,
 } from 'lucide-react';
 import { downloadBoardingPass } from '@/lib/boardingPass';
 import { RouteLine } from './RouteLine';
-import { loadAssignments, loadMembers, saveMembers } from '@/lib/storage';
-import { STATUS_LABELS, type Member } from '@/lib/types';
+import { errorText, updateWishlist } from '@/lib/api';
+import type { Member, MonitaRecipient } from '@/lib/types';
 
 interface DashboardProps {
   member: Member;
   drawDone: boolean;
+  monita: MonitaRecipient | null;
   onLogout: () => void;
-  onUpdate: (m: Member) => void;
+  onRefresh: () => Promise<void>;
 }
 
-export function Dashboard({ member, drawDone, onLogout, onUpdate }: DashboardProps) {
+export function Dashboard({ member, drawDone, monita, onLogout, onRefresh }: DashboardProps) {
   const pending = member.status === 'pending';
 
   return (
@@ -58,9 +60,9 @@ export function Dashboard({ member, drawDone, onLogout, onUpdate }: DashboardPro
       ) : (
         <div className="space-y-6">
           <BoardingPassCard member={member} />
-          <WishlistCard member={member} onUpdate={onUpdate} />
+          <WishlistCard member={member} onRefresh={onRefresh} />
           {drawDone ? (
-            <MonitaCard member={member} />
+            <MonitaCard monita={monita} />
           ) : (
             <div className="glass p-7 text-center">
               <Gift className="h-8 w-8 text-skyx-300 mx-auto" />
@@ -123,19 +125,27 @@ function BoardingPassCard({ member }: { member: Member }) {
   );
 }
 
-function WishlistCard({ member, onUpdate }: { member: Member; onUpdate: (m: Member) => void }) {
+function WishlistCard({ member, onRefresh }: { member: Member; onRefresh: () => Promise<void> }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(member.wishlist);
   const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const save = () => {
-    const members = loadMembers();
-    const updated = members.map((m) => (m.id === member.id ? { ...m, wishlist: text.trim() } : m));
-    saveMembers(updated);
-    onUpdate({ ...member, wishlist: text.trim() });
-    setEditing(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2200);
+  const save = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await updateWishlist(member.id, text);
+      await onRefresh();
+      setEditing(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2200);
+    } catch (err) {
+      setError(errorText(err, 'Хүслээ хадгалж чадсангүй.'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -146,8 +156,8 @@ function WishlistCard({ member, onUpdate }: { member: Member; onUpdate: (m: Memb
           Миний хүсэл
         </h3>
         {editing ? (
-          <button onClick={save} className="btn-gold !px-4 !py-2 text-sm">
-            <Save className="h-4 w-4" />
+          <button onClick={save} className="btn-gold !px-4 !py-2 text-sm" disabled={busy}>
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Хадгалах
           </button>
         ) : (
@@ -170,6 +180,9 @@ function WishlistCard({ member, onUpdate }: { member: Member; onUpdate: (m: Memb
           {member.wishlist || 'Хараахан хүсэл бичээгүй байна. Хүсэл нь таны Монитад бэлэг сонгоход тусална.'}
         </p>
       )}
+      {error && (
+        <p className="text-sm text-festive-400 font-semibold mt-3">{error}</p>
+      )}
       {saved && (
         <div className="flex items-center gap-2 text-emerald-400 text-sm font-semibold mt-3 animate-pop-in">
           <RefreshCw className="h-4 w-4" />
@@ -180,13 +193,10 @@ function WishlistCard({ member, onUpdate }: { member: Member; onUpdate: (m: Memb
   );
 }
 
-function MonitaCard({ member }: { member: Member }) {
+function MonitaCard({ monita }: { monita: MonitaRecipient | null }) {
   const [revealed, setRevealed] = useState(false);
 
-  const assignment = loadAssignments().find((a) => a.giverId === member.id);
-  const recipient = assignment ? loadMembers().find((m) => m.id === assignment.recipientId) : undefined;
-
-  if (!recipient) {
+  if (!monita) {
     return (
       <div className="glass p-7 text-center">
         <AlertCircleLone />
@@ -225,17 +235,17 @@ function MonitaCard({ member }: { member: Member }) {
               <User className="h-7 w-7 text-navy-950" />
             </div>
             <div className="min-w-0">
-              <div className="font-display text-xl font-bold text-white truncate">{recipient.fullName}</div>
+              <div className="font-display text-xl font-bold text-white truncate">{monita.fullName}</div>
               <div className="flex items-center gap-1.5 text-sm text-gold-300 font-mono font-bold mt-0.5">
                 <Hash className="h-3.5 w-3.5" />
-                {recipient.signCode}
+                {monita.signCode}
               </div>
             </div>
           </div>
           <div className="mt-4">
             <div className="text-[10px] tracking-[0.16em] text-slate-400 font-bold uppercase">Түүний хүсэл</div>
-            <p className={`mt-2 text-sm leading-relaxed rounded-2xl border p-4 ${recipient.wishlist ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white/[0.02] border-white/5 text-slate-500 italic'}`}>
-              {recipient.wishlist || 'Хүсэл бичээгүй байна — та бэлгээ өөрөө сонгоорой!'}
+            <p className={`mt-2 text-sm leading-relaxed rounded-2xl border p-4 ${monita.wishlist ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white/[0.02] border-white/5 text-slate-500 italic'}`}>
+              {monita.wishlist || 'Хүсэл бичээгүй байна — та бэлгээ өөрөө сонгоорой!'}
             </p>
           </div>
           <p className="mt-4 text-xs text-slate-500 flex items-center gap-2">
