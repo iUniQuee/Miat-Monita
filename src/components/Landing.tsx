@@ -7,7 +7,6 @@ import {  Plane,
   Award,
   Ticket,
   Sparkles,
-  Tag,
   ChevronRight,
   Snowflake,
 } from 'lucide-react';
@@ -132,13 +131,6 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
               <span>Бэлэг авсан хүн нь үргэлжлүүлэн өөрийнхөө Монитаг дуудах байдлаар гинжин хэлхээ үүсгэн ээлж дараалан явна.</span>
             </li>
           </ul>
-          <p className="mt-4 text-xs text-slate-400 flex items-start gap-2">
-            <Tag className="h-4 w-4 text-skyx-300 shrink-0 mt-0.5" />
-            <span>
-              Шошгон дээр Монитагийн нэр + Sign code-ийг тод бичээрэй (жишээ нь:{' '}
-              <span className="font-mono font-bold text-gold-300">Бат 0001BH</span>).
-            </span>
-          </p>
         </div>
 
         <div className="glass p-8 relative overflow-hidden">
