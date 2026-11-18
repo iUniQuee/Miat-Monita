@@ -16,7 +16,7 @@ export function downloadBoardingPass(member: Member) {
 <html lang="mn">
 <head>
 <meta charset="utf-8" />
-<title>Монита урилга — ${code}</title>
+<title>Монита урилга: ${code}</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #0b1526; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
@@ -45,7 +45,7 @@ export function downloadBoardingPass(member: Member) {
     <div class="top">
       <div>
         <div class="brand">MIAT · МОНИТА</div>
-        <div class="sub">Мэдээлэл лавлагааны тасаг — Нууц бэлэг солилцоо</div>
+        <div class="sub">Мэдээлэл лавлагааны тасаг, Нууц бэлэг солилцоо</div>
       </div>
       <div class="plane">✈</div>
     </div>
@@ -70,7 +70,7 @@ export function downloadBoardingPass(member: Member) {
     </div>
     <div class="footer">
       <span>Энэ урилгыг хадгалж үлдээнэ үү</span>
-      <span>МИАТ ТӨХК — Мэдээлэл лавлагааны тасаг</span>
+      <span>МИАТ ТӨХК, Мэдээлэл лавлагааны тасаг</span>
     </div>
   </div>
 </body>

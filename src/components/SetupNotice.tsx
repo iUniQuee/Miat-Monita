@@ -18,7 +18,7 @@ export function SetupNotice() {
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
           <span>
             Апп ажиллахын тулд Supabase project-ийн URL болон anon key хэрэгтэй. Эдгээрийг
-            кодонд бичихгүй — environment variable-аар дамжуулна.
+            кодонд бичихгүй, environment variable-аар дамжуулна.
           </span>
         </div>
 

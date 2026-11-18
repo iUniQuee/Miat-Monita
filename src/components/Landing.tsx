@@ -86,7 +86,7 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
       <section className="max-w-5xl mx-auto px-5 py-16">
         <div className="text-center mb-12">
           <h2 className="section-title">Дурсамж бүтээх өдрүүд</h2>
-          <p className="text-slate-400 mt-3">Монитагийн аяллын хөтлөгч — гурван гол цаг</p>
+          <p className="text-slate-400 mt-3">Монитагийн аяллын хөтлөгч, гурван гол цаг</p>
         </div>
         <div className="grid md:grid-cols-3 gap-5">
           {timeline.map((item, i) => (
@@ -120,17 +120,17 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
             <TreePine className="h-3.5 w-3.5" />
             Бэлэг байрлуулах цэг
           </div>
-          <h3 className="font-display text-2xl font-bold text-white mt-4">{`Ажлын гацуур модны доор`}</h3>
+          <h3 className="font-display text-2xl font-bold text-white mt-4">Ажлын гацуур модны доор</h3>
           <p className="mt-3 text-slate-300 leading-relaxed text-sm md:text-base">
-            Бэлгээ шууд гацуур модны доор байрлуулаарай. Хүлээн авагчийн нэр болон
-            таны <span className="text-gold-300 font-bold">Sign code</span>-ийг тод тэмдэглэсэн
-            шошготой байхыг хүсье — ингэснээр бэлэг зөв хүнд хүрнэ.
+            Бэлгээ шууд гацуур модны доор тавиарай. Бэлэг эзэндээ зөв хүрэхийн тулд
+            шошгон дээр Монитагийнхаа нэр болон өөрийн{' '}
+            <span className="text-gold-300 font-bold">Sign code</span>-ийг тод тэмдэглээрэй.
           </p>
           <p className="mt-4 text-xs text-slate-400 flex items-start gap-2">
             <Tag className="h-4 w-4 text-skyx-300 shrink-0 mt-0.5" />
             <span>
-              Шошго дээр хүлээн авагчийн нэр + Sign code-ийг тод бичээрэй — жишээ нь:
-              <span className="font-mono font-bold text-gold-300"> 0001BH</span>
+              Шошгон дээр Монитагийн нэр + Sign code-ийг тод бичээрэй (жишээ нь:{' '}
+              <span className="font-mono font-bold text-gold-300">Бат 0001BH</span>).
             </span>
           </p>
         </div>
@@ -139,19 +139,19 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
           <div className="absolute -top-8 -left-8 h-40 w-40 rounded-full bg-gold-500/10 blur-3xl" />
           <div className="badge bg-gold-500/15 text-gold-300 border border-gold-500/30">
             <Award className="h-3.5 w-3.5" />
-            Онцлог
+            Тусгай дүрэм
           </div>
           <h3 className="font-display text-2xl font-bold mt-4">
             <span className="text-gold-gradient">Алтан Монита</span>
           </h3>
           <p className="mt-3 text-slate-300 leading-relaxed text-sm md:text-base">
-            Сугалааны систем зарим нууц хослолыг санамсаргүйгээр «Алтан Монита» болгож
-            тодруулна. Энэ хосуудын нэрийг ажлын хамт олны тоглолт дээр нээж зарлана —
-            томлоогүй байгаа биз дээ!
+            Сугалааны систем зарим хослолыг санамсаргүй байдлаар “Алтан Монита” болгон
+            сонгоно. Хэн нь Алтан Монита болсныг хэн ч урьдчилан мэдэхгүй бөгөөд хамт
+            олны үдэш нууц бэлэг солилцох мөчид ил болно!
           </p>
           <div className="mt-5 flex items-center gap-2 text-sm text-slate-400">
             <Sparkles className="h-4 w-4 text-gold-400" />
-            <span>Таны бэлэг онгойлгож хэн нэгний өдрийг гэрэлтүүлээрэй</span>
+            <span>Сэтгэл шингэсэн бэлгээрээ хэн нэгний өдрийг гэрэлтүүлээрэй.</span>
           </div>
         </div>
       </section>
@@ -253,7 +253,7 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
       <footer className="border-t border-white/5 py-8 text-center text-xs text-slate-500">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Plane className="h-3.5 w-3.5 text-skyx-400" />
-          <span className="font-semibold text-slate-400">МИАТ ТӨХК — Мэдээлэл лавлагааны тасаг</span>
+          <span className="font-semibold text-slate-400">МИАТ ТӨХК, Мэдээлэл лавлагааны тасаг</span>
         </div>
         <span>Монита нууц бэлэг солилцоо · {new Date().getFullYear()}</span>
       </footer>
