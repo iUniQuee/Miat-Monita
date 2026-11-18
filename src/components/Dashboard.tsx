@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
   CheckCircle2,
   Clock,
-  Download,
   Gift,
   Hash,
   Loader2,
@@ -14,7 +13,6 @@ import {
   Ticket,
   User,
 } from 'lucide-react';
-import { downloadBoardingPass } from '@/lib/boardingPass';
 import { RouteLine } from './RouteLine';
 import { errorText, updateWishlist } from '@/lib/api';
 import type { Member, MonitaRecipient } from '@/lib/types';
@@ -91,13 +89,7 @@ function BoardingPassCard({ member }: { member: Member }) {
             <div className="text-[11px] text-slate-400">Мэдээлэл лавлагааны тасаг</div>
           </div>
         </div>
-        <button
-          onClick={() => downloadBoardingPass(member)}
-          className="btn-gold !px-4 !py-2 text-sm"
-        >
-          <Download className="h-4 w-4" />
-          Урилга татах
-        </button>
+        <div className="text-[11px] text-slate-400 text-right">Миний урилга</div>
       </div>
       <div className="flex">
         <div className="flex-1 p-6">
@@ -222,7 +214,7 @@ function MonitaCard({ monita }: { monita: MonitaRecipient | null }) {
             <Gift className="h-10 w-10 text-gold-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-white mt-5">Бэлэн үү?</h3>
-          <p className="text-sm text-slate-400 mt-2 mb-6">Товчлуурыг дарж Монитагаа нууцаа нээгээрэй</p>
+          <p className="text-sm text-slate-400 mt-2 mb-6">Товчлуурыг дарж нууц Монитагаа нээгээрэй</p>
           <button onClick={() => setRevealed(true)} className="btn-gold">
             <Sparkles className="h-5 w-5" />
             Нууцыг нээх
@@ -245,12 +237,12 @@ function MonitaCard({ monita }: { monita: MonitaRecipient | null }) {
           <div className="mt-4">
             <div className="text-[10px] tracking-[0.16em] text-slate-400 font-bold uppercase">Түүний хүсэл</div>
             <p className={`mt-2 text-sm leading-relaxed rounded-2xl border p-4 ${monita.wishlist ? 'bg-white/5 border-white/10 text-slate-200' : 'bg-white/[0.02] border-white/5 text-slate-500 italic'}`}>
-              {monita.wishlist || 'Хүсэл бичээгүй байна — та бэлгээ өөрөө сонгоорой!'}
+              {monita.wishlist || 'Хүсэл бичээгүй байна. Та бэлгээ өөрөө сонгоорой!'}
             </p>
           </div>
           <p className="mt-4 text-xs text-slate-500 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            Энэ нэрний нууцыг хэн ч мэдэхгүй — зөвхөн танд харагдана
+            Энэ нэрний нууцыг хэн ч мэдэхгүй. Зөвхөн танд харагдана
           </p>
         </div>
       )}
