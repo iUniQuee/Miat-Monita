@@ -120,12 +120,18 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
             <TreePine className="h-3.5 w-3.5" />
             Бэлэг байрлуулах цэг
           </div>
-          <h3 className="font-display text-2xl font-bold text-white mt-4">Ажлын гацуур модны доор</h3>
-          <p className="mt-3 text-slate-300 leading-relaxed text-sm md:text-base">
-            Бэлгээ шууд гацуур модны доор тавиарай. Бэлэг эзэндээ зөв хүрэхийн тулд
-            шошгон дээр Монитагийнхаа нэр болон өөрийн{' '}
-            <span className="text-gold-300 font-bold">Sign code</span>-ийг тод тэмдэглээрэй.
-          </p>
+          <h3 className="font-display text-xl md:text-2xl font-bold text-white mt-4 leading-snug">Бэлгээ шууд гацуур модны доор тавина уу.</h3>
+          <p className="mt-4 text-sm font-bold text-gold-300">Хэрхэн явагдах вэ?</p>
+          <ul className="mt-3 space-y-2.5 text-slate-300 leading-relaxed text-sm">
+            <li className="flex gap-2">
+              <span className="text-emerald-300 shrink-0">•</span>
+              <span>Бэлэг өгөх цаг болоход нэг хүн гарч ирээд өөрийнхөө Монитаг дуудаж бэлгээ гардуулна.</span>
+            </li>
+            <li className="flex gap-2">
+              <span className="text-emerald-300 shrink-0">•</span>
+              <span>Бэлэг авсан хүн нь үргэлжлүүлэн өөрийнхөө Монитаг дуудах байдлаар гинжин хэлхээ үүсгэн ээлж дараалан явна.</span>
+            </li>
+          </ul>
           <p className="mt-4 text-xs text-slate-400 flex items-start gap-2">
             <Tag className="h-4 w-4 text-skyx-300 shrink-0 mt-0.5" />
             <span>
