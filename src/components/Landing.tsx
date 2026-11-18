@@ -5,13 +5,10 @@ import {  Plane,
   CalendarDays,
   TreePine,
   Award,
-  Ticket,
   Sparkles,
   ChevronRight,
-  Snowflake,
 } from 'lucide-react';
 import { StatusBanner } from './StatusBanner';
-import { RouteLine } from './RouteLine';
 import { dateOrTba } from '@/lib/format';
 import type { EventDates } from '@/lib/types';
 
@@ -154,52 +151,6 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
         </div>
       </section>
 
-      {/* BOARDING PASS PREVIEW */}
-      <section className="max-w-5xl mx-auto px-5 py-16">
-        <div className="text-center mb-12">
-          <h2 className="section-title">Таны boarding pass урилга</h2>
-          <p className="text-slate-400 mt-3">Баталгаажсан гишүүн бүр аялал зөвлөмжтэй урилга татаж авна</p>
-        </div>
-        <div className="max-w-xl mx-auto">
-          <div className="rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-navy-700 to-navy-800 shadow-glow-blue">
-            <div className="px-6 py-4 flex items-center justify-between bg-white/[0.04] border-b border-white/10">
-              <div>
-                <div className="font-display font-bold text-white flex items-center gap-2">
-                  <Plane className="h-4 w-4 text-gold-400" />
-                  MIAT · МОНИТА
-                </div>
-                <div className="text-xs text-slate-400 mt-0.5">Мэдээлэл лавлагааны тасаг</div>
-              </div>
-              <Ticket className="h-6 w-6 text-gold-400" />
-            </div>
-            <div className="flex">
-              <div className="flex-1 p-6">
-                <div className="text-[10px] tracking-[0.16em] text-slate-400 font-bold uppercase">Зочин</div>
-                <div className="font-display text-lg font-bold text-white mt-1">Таны нэр</div>
-                <div className="flex items-center gap-3 mt-4">
-                  <RouteLine />
-                </div>
-                <div className="text-[10px] tracking-[0.16em] text-slate-400 font-bold uppercase mt-4">Бэлгийн буудал</div>
-                <div className="text-sm text-slate-200 mt-1">Ажлын гацуур модны доор</div>
-              </div>
-              <div className="w-36 border-l-2 border-dashed border-white/15 bg-white/[0.03] p-4 flex flex-col items-center justify-center text-center">
-                <div className="text-[10px] tracking-[0.16em] text-slate-400 font-bold uppercase">Sign Code</div>
-                <div className="font-display text-xl font-bold text-gold-300 mt-1 tracking-widest">····</div>
-                <div className="mt-3 flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} className="w-1.5 h-5 rounded-sm bg-white/20" />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          <p className="text-center text-sm text-slate-400 mt-4 flex items-center justify-center gap-2">
-            <Snowflake className="h-4 w-4 text-skyx-300" />
-            Бүртгэл баталгаажсаны дараа урилгаа татаж авна
-          </p>
-        </div>
-      </section>
-
       {/* HOW IT WORKS */}
       <section className="max-w-5xl mx-auto px-5 py-16 pb-24">
         <div className="text-center mb-12">
@@ -238,7 +189,7 @@ export function Landing({ dates, onEnter, onAdmin, loggedIn }: LandingProps) {
         <section className="max-w-3xl mx-auto px-5 py-10 pb-20">
           <div className="glass-strong p-8 text-center">
             <h3 className="font-display text-xl md:text-2xl font-bold text-white">Таны бүртгэл идэвхтэй байна</h3>
-            <p className="text-sm text-slate-400 mt-2">Урилга, хүсэл болон Монитагаа өөрийн хуудаснаас харна уу</p>
+            <p className="text-sm text-slate-400 mt-2">Хүсэл болон Монитагаа өөрийн булангаас харна уу</p>
             <button onClick={onEnter} className="btn-gold mt-6 group">
               <TreePine className="h-5 w-5" />
               Миний булан руу орох
