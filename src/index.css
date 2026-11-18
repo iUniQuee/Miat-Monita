@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-navy-950 text-slate-100 font-sans antialiased;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(56, 168, 232, 0.14), transparent),
+    radial-gradient(ellipse 60% 40% at 90% 20%, rgba(245, 185, 61, 0.07), transparent),
+    radial-gradient(ellipse 50% 40% at 5% 60%, rgba(217, 58, 58, 0.06), transparent);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/[0.05] backdrop-blur-xl border border-white/10 rounded-3xl;
+  }
+  .glass-strong {
+    @apply bg-navy-800/70 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-glow-blue;
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-bold text-navy-950
+      bg-gradient-to-b from-gold-300 to-gold-500 shadow-glow
+      transition-all duration-200 hover:-translate-y-0.5 hover:brightness-110
+      active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-3 font-semibold
+      border border-white/15 bg-white/5 text-slate-100
+      transition-all duration-200 hover:bg-white/10 hover:border-white/25
+      active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold
+      border border-festive-500/40 bg-festive-500/15 text-festive-400
+      transition-all duration-200 hover:bg-festive-500/25 hover:border-festive-400
+      active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+  }
+  .field {
+    @apply w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100
+      placeholder:text-slate-500 outline-none transition-all duration-200
+      focus:border-skyx-400/60 focus:bg-white/[0.08] focus:ring-2 focus:ring-skyx-500/20;
+  }
+  .label {
+    @apply block text-sm font-semibold text-slate-300 mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold;
+  }
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-white tracking-tight;
+  }
+}
+
+.text-gold-gradient {
+  @apply bg-clip-text text-transparent;
+  background-image: linear-gradient(120deg, #ffe9a8 0%, #ffd76e 40%, #f5b93d 60%, #ffe9a8 100%);
+  background-size: 200% auto;
+  animation: shimmer 4s linear infinite;
+}
+
+.snow-dot {
+  position: absolute;
+  top: -2vh;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+  animation: snowFall linear infinite;
+}
+
+@keyframes snowFall {
+  0% {
+    transform: translate3d(0, -4vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  90% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translate3d(6vw, 104vh, 0) rotate(280deg);
+    opacity: 0;
+  }
+}
+
+.plane-trail {
+  position: absolute;
+  pointer-events: none;
+  animation: planeFly 26s linear infinite;
+  opacity: 0;
+}
+
+@keyframes planeFly {
+  0% {
+    transform: translateX(-14vw) translateY(0);
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.9;
+  }
+  92% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(112vw) translateY(-6vh);
+    opacity: 0;
+  }
+}
+
+::selection {
+  background: rgba(245, 185, 61, 0.35);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #050b1c;
+}
+::-webkit-scrollbar-thumb {
+  background: #1a3260;
+  border-radius: 8px;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+  }
+}
