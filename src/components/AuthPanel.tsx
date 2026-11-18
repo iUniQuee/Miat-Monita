@@ -131,7 +131,7 @@ function RegisterForm({
           required
         />
         <p className="text-xs text-slate-500 mt-1.5">
-          Sign code-оор нэвтэрнэ — санаж үлдэхээр сонгоорой.
+          Sign code-оор нэвтэрнэ. Санаж үлдэхээр сонгоорой.
         </p>
       </div>
       <div>
@@ -159,7 +159,7 @@ function RegisterForm({
       </div>
       <div>
         <label className="label">
-          Миний хүсэл <span className="text-slate-500 font-normal">(бэлгийн зөвлөмж — сунан бичиж болно)</span>
+          Миний хүсэл <span className="text-slate-500 font-normal">(бэлгийн зөвлөмж, сунан бичиж болно)</span>
         </label>
         <textarea
           className="field min-h-[84px] resize-y"

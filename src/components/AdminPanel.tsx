@@ -81,7 +81,7 @@ export function AdminPanel({
         <div className="mb-6 flex items-start gap-2 rounded-xl border border-gold-500/30 bg-gold-500/10 px-4 py-3 text-sm text-gold-300">
           <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
           Таны бүртгэлд зохион байгуулагчийн эрх байхгүй. Өөрчлөлтийг сервер (RLS)
-          хүлээж авахгүй — Sign code нь {ADMIN_SIGN_CODE} бүртгэлээр нэвтэрнэ үү.
+          хүлээж авахгүй. Sign code нь {ADMIN_SIGN_CODE} бүртгэлээр нэвтэрнэ үү.
         </div>
       )}
 
@@ -356,7 +356,7 @@ function DatesSection({
         </div>
       </form>
       <p className="text-xs text-slate-500 mt-3">
-        Одоогийн: Бүртгэл — {dateOrTba(dates.registration)} · Сонгох — {dateOrTba(dates.draw)} · Бэлэг — {dateOrTba(dates.giftDay)}
+        Одоогийн: Бүртгэл {dateOrTba(dates.registration)} · Сонгох {dateOrTba(dates.draw)} · Бэлэг {dateOrTba(dates.giftDay)}
       </p>
     </div>
   );
